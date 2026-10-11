@@ -85,9 +85,9 @@ Company ─< Drive ─< Round
 ```
 
 `Application.stage` is never set by hand. `lib/stage.ts` derives it from the
-round results on every write: any FAIL → not selected, every round passed →
-offer, otherwise in progress. Clearing every round also records an `Offer`, so
-the overview figures follow from the same toggles rather than a second step
+round results on every write: any FAIL → not selected, every round passed → offer,
+otherwise in progress. Clearing every round also records an `Offer`, so the
+overview figures follow from the same toggles rather than a second step
 someone forgets.
 
 `lib/eligibility.ts` is the single source for who can apply. The drive card
@@ -98,8 +98,8 @@ act on: `"Needs 8.5 CGPA — yours is 8.42"`.
 ## Notices and notifications
 
 Two separate things. **Notices** are written by the cell and persist on a board
-(`/notices`, `/admin/notices`). **Notifications** are per-student and emitted by
-events — nobody writes them. Publishing a notice emits notifications.
+(`/notices`, `/admin/notices`). **Notifications** are per-student and emitted
+by events — nobody writes them. Publishing a notice emits notifications.
 
 Every emit rule lives in `lib/notify.ts` so "who is told what" has one answer,
 and the fan-out calls the same `checkEligibility()` the drive list uses — a
@@ -130,8 +130,7 @@ email plus a scheduler.
 ## The screens
 
 **Placement cell** — `/admin` (first-run checklist, then season figures),
-`/admin/notices`,
-`/admin/companies`, `/admin/drives` and `/admin/drives/new` (with a live
+`/admin/notices`, `/admin/companies`, `/admin/drives` and `/admin/drives/new` (with a live
 eligible-student counter), `/admin/drives/[id]/applicants`, `/admin/students`,
 `/admin/settings` (branches and who else is an admin).
 
@@ -180,5 +179,3 @@ and contrast against each mode's surface.
 Resume file upload (the profile takes a link for now), email notifications, the
 question bank and interview experiences, the recruiter portal, reports and
 exports, and the audit log.
-#   P l a c e m e n t H U B  
- 
