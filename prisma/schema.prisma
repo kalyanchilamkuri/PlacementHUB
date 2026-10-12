@@ -1,0 +1,202 @@
+// SQLite has no enum support in Prisma, so status columns are plain strings.
+// The permitted values live in lib/types.ts and are enforced in TypeScript.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/* ------------------------------------------------------------- accounts */
+
+model User {
+  id          String    @id @default(cuid())
+  name        String?
+  email       String    @unique
+  /// scrypt:<salt>:<derived key>, produced by lib/password.ts. Never plaintext.
+  passwordHash String
+  role        String    @default("STUDENT") // ADMIN | STUDENT
+  /// Set when the cell resets someone's password for them.
+  mustChangePassword Boolean @default(false)
+  createdAt   DateTime  @default(now())
+  lastLoginAt DateTime?
+
+  student       Student?
+  notices       Notice[]
+  notifications Notification[]
+}
+
+/* -------------------------------------------------------------- people */
+
+model Student {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  rollNo         String?
+  branchCode     String?
+  batch          Int?
+  phone          String?
+  cgpa           Float?
+  tenthPct       Float?
+  twelfthPct     Float?
+  activeBacklogs Int     @default(0)
+  resumeUrl      String?
+  resumeLabel    String?
+  /// Set by the cell once academics are checked against the registry.
+  verified       Boolean @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch Branch? @relation(fields: [branchCode], references: [code])
+
+  applications Application[]
+  offers       Offer[]
+}
+
+model Branch {
+  code      String @id
+  name      String
+  programme String
+
+  students Student[]
+}
+
+/* ------------------------------------------------------- communication */
+
+/// Written by the cell and browsable. The digital corridor noticeboard.
+model Notice {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  priority    String   @default("NORMAL") // URGENT | NORMAL
+  /// Comma separated branch codes. Empty means everyone.
+  branchCodes String   @default("")
+  publishedAt DateTime @default(now())
+  createdById String?
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+/// Emitted by events, never written by hand. See lib/notify.ts.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // DRIVE_PUBLISHED | STAGE_CHANGED | ROUND_SCHEDULED | DEADLINE_SOON | NOTICE
+  title     String
+  body      String?
+  href      String?
+  /// Stops the same thing being announced twice. Null when repeats are fine.
+  dedupeKey String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt])
+}
+
+/* ------------------------------------------------------------ openings */
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  sector      String?
+  website     String?
+  hq          String?
+  description String?
+  createdAt   DateTime @default(now())
+
+  drives Drive[]
+}
+
+model Drive {
+  id        String   @id @default(cuid())
+  companyId String
+  role      String
+  type      String // Full-time | Internship | Internship + Full-time | PPO
+  /// Rupees per annum, stored as an integer.
+  ctc       Int?
+  /// Rupees per month.
+  stipend   Int?
+  locations String?
+  jdText    String?
+  deadline  DateTime
+  status    String   @default("DRAFT") // DRAFT | PUBLISHED | CLOSED | COMPLETED
+  season    String?
+
+  minCgpa     Float  @default(0)
+  maxBacklogs Int    @default(0)
+  minTenthPct Float?
+  minTwelfthPct Float?
+  /// Comma separated branch codes. Empty means every branch.
+  branchCodes String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rounds       Round[]
+  applications Application[]
+  offers       Offer[]
+}
+
+model Round {
+  id       String    @id @default(cuid())
+  driveId  String
+  order    Int
+  name     String
+  type     String // PPT | OA | GD | TECH | HR
+  startsAt DateTime?
+  venue    String?
+
+  drive   Drive         @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  results RoundResult[]
+
+  @@unique([driveId, order])
+}
+
+/* --------------------------------------------------------- applications */
+
+model Application {
+  id        String   @id @default(cuid())
+  driveId   String
+  studentId String
+  /// Derived in lib/stage.ts on every result write; never set by hand.
+  stage     String   @default("APPLIED")
+  appliedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drive   Drive   @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  results RoundResult[]
+
+  @@unique([driveId, studentId])
+}
+
+model RoundResult {
+  id            String   @id @default(cuid())
+  applicationId String
+  roundId       String
+  result        String   @default("PENDING") // PENDING | PASS | FAIL
+  updatedAt     DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  round       Round       @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, roundId])
+}
+
+model Offer {
+  id        String   @id @default(cuid())
+  studentId String
+  driveId   String
+  ctc       Int
+  offeredOn DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  drive   Drive   @relation(fields: [driveId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, driveId])
+}

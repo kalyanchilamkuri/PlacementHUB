@@ -1,26 +1,380 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ============================================================================
+   IIIT Lucknow Training & Placement Cell
+   Design language: "Trace" — the institute crest is a cusped Awadhi arch with
+   printed-circuit traces radiating from it. Every colour below is sampled from
+   that crest; the trace and the arch are the two structural devices.
+   ========================================================================== */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-sunk: var(--bg-sunk);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+
+  --color-blue: var(--blue);
+  --color-blue-deep: var(--blue-deep);
+  --color-blue-wash: var(--blue-wash);
+  --color-trace: var(--trace);
+  --color-trace-wash: var(--trace-wash);
+  --color-arch: var(--arch);
+  --color-arch-wash: var(--arch-wash);
+
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-on-blue: var(--on-blue);
+
+  --font-display: var(--font-marcellus), Georgia, serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-code), ui-monospace, monospace;
+
+  --radius-niche: 44% 44% 14px 14px / 34% 34% 14px 14px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ---------------------------------------------------------------- palettes */
+
+:root {
+  color-scheme: light;
+
+  --bg: #f3f7fa;
+  --bg-sunk: #e7eff5;
+  --surface: #ffffff;
+  --surface-2: #eef4f8;
+  --line: #d3e1ea;
+  --line-soft: #e4edf3;
+
+  --ink: #06202f;
+  --muted: #536f80;
+  --faint: #7d97a6;
+
+  --blue: #005f99; /* sampled: crest lettering */
+  --blue-deep: #00405f;
+  --blue-wash: #e4f0f8;
+  --trace: #008325; /* sampled: circuit traces */
+  --trace-wash: #e2f4e6;
+  --arch: #de6c1a; /* sampled: the arch */
+  --arch-wash: #fdeede;
+
+  --ok: #0c7a2e;
+  --warn: #b25f0d;
+  --bad: #c0342d;
+  --on-blue: #ffffff;
+
+  /* Chart marks are stepped per mode and validated against that mode's surface,
+     so they are not the same steps as the UI blue. */
+  --chart-1: #005f99;
+  --chart-2: #de6c1a;
+  --chart-grid: #e2ebf1;
+  --chart-axis: #90a9b8;
+
+  --glass-tint: 255 255 255;
+  --glass-alpha: 0.7;
+  --glass-rim: rgb(255 255 255 / 0.9);
+  --glass-edge: #cfdfea;
+  --sheen: rgb(255 255 255 / 0.85);
+  --shadow-lift: 0 1px 2px rgb(6 32 47 / 0.05), 0 12px 28px -12px rgb(6 32 47 / 0.16);
+  --shadow-float: 0 2px 6px rgb(6 32 47 / 0.06), 0 30px 60px -24px rgb(6 32 47 / 0.28);
+  --grid-line: rgb(0 95 153 / 0.06);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #04131e;
+  --bg-sunk: #020b13;
+  --surface: #0a2130;
+  --surface-2: #0e2b3d;
+  --line: #1c4157;
+  --line-soft: #143244;
+
+  --ink: #e2eff7;
+  --muted: #8fb0c4;
+  --faint: #6b8da0;
+
+  --blue: #3aa8e6;
+  --blue-deep: #0e7ab8;
+  --blue-wash: #0a2b40;
+  --trace: #2ac055;
+  --trace-wash: #0a2e1a;
+  --arch: #f59240;
+  --arch-wash: #33200d;
+
+  --ok: #3ccb62;
+  --warn: #f0a44a;
+  --bad: #ff7a72;
+  --on-blue: #04131e;
+
+  --chart-1: #2c96d6;
+  --chart-2: #de6c1a;
+  --chart-grid: #16384c;
+  --chart-axis: #6b8da0;
+
+  --glass-tint: 10 33 48;
+  --glass-alpha: 0.46;
+  --glass-rim: rgb(140 200 235 / 0.16);
+  --glass-edge: #1c4157;
+  --sheen: rgb(180 225 255 / 0.14);
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 14px 30px -14px rgb(0 0 0 / 0.6);
+  --shadow-float: 0 2px 8px rgb(0 0 0 / 0.45), 0 34px 70px -28px rgb(0 0 0 / 0.8);
+  --grid-line: rgb(90 180 230 / 0.07);
+}
+
+/* ------------------------------------------------------------------- base */
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv05' 1;
+}
+
+/* Stat numbers must line up column to column. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+::selection {
+  background: var(--arch);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ------------------------------------------------------- display typography
+   Marcellus is inscriptional — one weight only, so headings earn emphasis
+   from size and letter-spacing rather than from bolding. */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.04;
+}
+
+.display-caps {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.12;
+}
+
+/* ------------------------------------------------------------------ glass
+   Frosted panels stand in for the jali screen: a layer you read through.
+   Reserved for floating layers (nav, rails, drawers) — body copy sits on
+   solid surfaces so it stays legible. */
+
+.glass {
+  background: rgb(var(--glass-tint) / var(--glass-alpha));
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-rim);
+  box-shadow: var(--shadow-lift), inset 0 1px 0 var(--sheen);
+}
+
+/* Navigation sits over arbitrary page content, so it is frosted harder than a
+   decorative panel — the links have to stay legible over anything. */
+.glass-nav {
+  background: rgb(var(--glass-tint) / calc(var(--glass-alpha) + 0.28));
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+
+.glass-deep {
+  background: rgb(var(--glass-tint) / calc(var(--glass-alpha) + 0.18));
+  backdrop-filter: blur(32px) saturate(1.6);
+  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+  border: 1px solid var(--glass-rim);
+  box-shadow: var(--shadow-float), inset 0 1px 0 var(--sheen);
+}
+
+@supports not (backdrop-filter: blur(4px)) {
+  .glass,
+  .glass-nav,
+  .glass-deep {
+    background: var(--surface);
+  }
+}
+
+/* --------------------------------------------------------------- the niche
+   Company logos and portrait tiles sit in an arched niche rather than yet
+   another rounded rectangle. */
+
+.niche {
+  border-radius: var(--radius-niche);
+}
+
+/* ---------------------------------------------------------- the trace rail
+   A thin run with vias on it. Used wherever something progresses: the
+   application stepper, the round timeline, the season schedule. */
+
+.rail {
+  background-image: linear-gradient(to bottom, var(--line) 0 100%);
+  background-size: 1px 100%;
+  background-repeat: no-repeat;
+  background-position: left top;
+}
+
+.via {
+  box-shadow: 0 0 0 4px var(--bg);
+}
+
+/* -------------------------------------------------------------- substrate
+   A faint board grid behind hero and section breaks. */
+
+.substrate {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+/* Behind the hero panel the lattice drops back so body copy keeps its contrast;
+   it comes up to full strength clear of the glass. */
+@media (min-width: 1024px) {
+  .lattice-dim {
+    mask-image: linear-gradient(90deg, rgb(0 0 0 / 0.24) 0%, rgb(0 0 0 / 0.3) 34%, #000 62%);
+  }
+}
+
+.substrate-fade {
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 78%);
+}
+
+/* ------------------------------------------------------------------ motion
+   One orchestrated arrival per page. Everything gated on reduced-motion. */
+
+@keyframes trace-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes via-light {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes via-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes sheen-sweep {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+.arrive {
+  animation: rise 0.55s cubic-bezier(0.22, 0.75, 0.3, 1) both;
+}
+
+.marquee-track {
+  animation: marquee 48s linear infinite;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --------------------------------------------------------- theme-only bits
+   Lets a control show the right icon without React state to hydrate. */
+
+:root[data-theme='dark'] .when-light {
+  display: none;
+}
+
+:root:not([data-theme='dark']) .when-dark {
+  display: none;
+}
+
+/* Tab strips scroll on phones but must not show a bar on desktop. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ------------------------------------------------------------- scrollbars */
+
+@media (min-width: 768px) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
 }
