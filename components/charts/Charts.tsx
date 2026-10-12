@@ -7,6 +7,8 @@ import {
   Cell,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -208,6 +210,181 @@ export function CtcHistogram({ data }: { data: { label: string; count: number }[
           <Bar dataKey="count" radius={[4, 4, 0, 0]} fill="var(--chart-1)" maxBarSize={56} />
         </BarChart>
       </ResponsiveContainer>
+    </Card>
+  );
+}
+
+/* ------------------------------------------------------------- donut chart */
+
+export function DonutChart({
+  title,
+  note,
+  data,
+  centre,
+}: {
+  title: string;
+  note?: string;
+  data: { name: string; value: number; color: string }[];
+  centre?: { value: string; label: string };
+}) {
+  const total = data.reduce((n, d) => n + d.value, 0);
+  return (
+    <Card title={title} note={note}>
+      {total === 0 ? (
+        <p className="py-16 text-center text-sm text-muted">No data for this selection yet.</p>
+      ) : (
+        <div className="flex flex-wrap items-center justify-center gap-6">
+          <div className="relative size-[190px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={62}
+                  outerRadius={90}
+                  paddingAngle={data.filter((d) => d.value > 0).length > 1 ? 2 : 0}
+                  stroke="var(--surface)"
+                  strokeWidth={2}
+                  animationDuration={900}
+                >
+                  {data.map((d) => (
+                    <Cell key={d.name} fill={d.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const d = payload[0]!;
+                    return (
+                      <TipShell>
+                        <div className="font-medium">{String(d.name)}</div>
+                        <div className="tnum mt-0.5 text-muted">
+                          {String(d.value)} ({Math.round((Number(d.value) / total) * 100)}%)
+                        </div>
+                      </TipShell>
+                    );
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            {centre && (
+              <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+                <div>
+                  <div className="tnum display text-3xl">{centre.value}</div>
+                  <div className="text-xs text-muted">{centre.label}</div>
+                </div>
+              </div>
+            )}
+          </div>
+          <ul className="space-y-2 text-sm">
+            {data.map((d) => (
+              <li key={d.name} className="flex items-center gap-2">
+                <span className="size-2.5 rounded-full" style={{ background: d.color }} aria-hidden />
+                <span>{d.name}</span>
+                <span className="tnum ml-2 text-muted">{d.value}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* -------------------------------------------------- company-wise selections */
+
+export function CompanyBarChart({ data }: { data: { company: string; count: number }[] }) {
+  return (
+    <Card title="Top recruiters" note="Companies ranked by students selected.">
+      {data.length === 0 ? (
+        <p className="py-16 text-center text-sm text-muted">No offers recorded yet.</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={Math.max(240, data.length * 34)}>
+          <BarChart data={data} layout="vertical" margin={{ left: 4, right: 28, top: 4, bottom: 4 }}>
+            <CartesianGrid horizontal={false} stroke="var(--chart-grid)" />
+            <XAxis type="number" allowDecimals={false} {...AXIS} tickLine={false} axisLine={false} />
+            <YAxis type="category" dataKey="company" width={110} {...AXIS} tickLine={false} axisLine={false} />
+            <Tooltip
+              cursor={{ fill: 'var(--chart-grid)', opacity: 0.45 }}
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const d = payload[0]!.payload as (typeof data)[number];
+                return (
+                  <TipShell>
+                    <div className="font-medium">{d.company}</div>
+                    <div className="tnum mt-0.5 text-muted">{d.count} selected</div>
+                  </TipShell>
+                );
+              }}
+            />
+            <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={14} fill="var(--chart-2)" animationDuration={900} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </Card>
+  );
+}
+
+/* ------------------------------------------------- batch-wise stacked bars */
+
+export function BatchStackChart({
+  data,
+  series,
+}: {
+  data: Record<string, string | number>[];
+  series: { key: string; label: string; color: string }[];
+}) {
+  return (
+    <Card title="Batch by batch" note="Students in each batch, split by where they are now.">
+      {data.length === 0 ? (
+        <p className="py-16 text-center text-sm text-muted">No offers recorded yet.</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={data} margin={{ left: -14, right: 8, top: 12, bottom: 4 }} barCategoryGap={22}>
+            <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+            <XAxis dataKey="batch" {...AXIS} tickLine={false} axisLine={false} />
+            <YAxis allowDecimals={false} {...AXIS} tickLine={false} axisLine={false} width={44} />
+            <Tooltip
+              cursor={{ fill: 'var(--chart-grid)', opacity: 0.45 }}
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                return (
+                  <TipShell>
+                    <div className="font-medium">{String(label)}</div>
+                    {payload.map((p) => (
+                      <div key={String(p.dataKey)} className="tnum mt-0.5 flex gap-2 text-muted">
+                        <span className="mt-1 size-2 shrink-0 rounded-full" style={{ background: p.color }} aria-hidden />
+                        <span>{series.find((x) => x.key === p.dataKey)?.label}</span>
+                        <span className="ml-auto">{String(p.value)}</span>
+                      </div>
+                    ))}
+                  </TipShell>
+                );
+              }}
+            />
+            {series.map((x, i) => (
+              <Bar
+                key={x.key}
+                dataKey={x.key}
+                stackId="a"
+                fill={x.color}
+                radius={i === series.length - 1 ? [6, 6, 0, 0] : 0}
+                maxBarSize={64}
+                animationDuration={900}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+      <div className="mt-3 flex flex-wrap gap-4">
+        {series.map((x) => (
+          <span key={x.key} className="flex items-center gap-1.5 text-xs text-muted">
+            <span className="size-2.5 rounded-full" style={{ background: x.color }} aria-hidden />
+            {x.label}
+          </span>
+        ))}
+      </div>
     </Card>
   );
 }
