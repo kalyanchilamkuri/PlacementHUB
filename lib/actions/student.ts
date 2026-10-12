@@ -101,6 +101,16 @@ export async function updateMyProfile(_prev: unknown, formData: FormData): Promi
   if (batch !== null && (batch < 2000 || batch > 2100))
     return { ok: false, error: 'That graduation year does not look right.' };
 
+  const linkedinUrl = str(formData, 'linkedinUrl');
+  if (linkedinUrl && !/^https?:\/\/[^\s]+$/i.test(linkedinUrl))
+    return { ok: false, error: 'The LinkedIn link has to start with https://.' };
+  const skills = str(formData, 'skills')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 15)
+    .join(', ');
+
   // Verified academics are locked; the cell changes them after a correction request.
   const academics = student.verified
     ? {}
@@ -120,6 +130,8 @@ export async function updateMyProfile(_prev: unknown, formData: FormData): Promi
       phone: str(formData, 'phone') || null,
       resumeUrl: str(formData, 'resumeUrl') || null,
       resumeLabel: str(formData, 'resumeLabel') || null,
+      skills: skills || null,
+      linkedinUrl: linkedinUrl || null,
       ...academics,
     },
   });
