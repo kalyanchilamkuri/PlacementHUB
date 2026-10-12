@@ -27,5 +27,6 @@ export const config = {
     '/calendar/:path*',
     '/drives/:path*',
     '/profile/:path*',
+    '/placements/:path*',
   ],
 };

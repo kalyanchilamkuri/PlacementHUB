@@ -57,3 +57,10 @@ export function initials(name: string) {
     .map((w) => w[0]!.toUpperCase())
     .join('');
 }
+
+/** "12 LPA" for packages, "₹40,000/mo" for stipends, null when neither is recorded. */
+export function offerMoney(o: { ctc: number; stipend?: number | null }) {
+  if (o.ctc > 0) return lpa(o.ctc);
+  if (o.stipend && o.stipend > 0) return `₹${o.stipend.toLocaleString('en-IN')}/mo`;
+  return null;
+}

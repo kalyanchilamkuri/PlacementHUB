@@ -1,5 +1,6 @@
 import { db } from './db';
-import type { Stage } from './types';
+import { DRIVE_TYPE_TO_OFFER_TYPE, type Stage } from './types';
+import { lpa } from './utils';
 
 /**
  * An application's stage is never written by hand — it is derived from the
@@ -29,7 +30,15 @@ export async function recomputeStage(applicationId: string) {
       studentId: true,
       driveId: true,
       results: { select: { result: true } },
-      drive: { select: { ctc: true, _count: { select: { rounds: true } } } },
+      student: { select: { user: { select: { name: true } } } },
+      drive: {
+        select: {
+          ctc: true,
+          type: true,
+          company: { select: { name: true } },
+          _count: { select: { rounds: true } },
+        },
+      },
     },
   });
   if (!application) return;
@@ -43,15 +52,28 @@ export async function recomputeStage(applicationId: string) {
     studentId_driveId: { studentId: application.studentId, driveId: application.driveId },
   };
   if (stage === 'OFFER') {
+    const ctc = application.drive.ctc ?? 0;
+    const offerType = DRIVE_TYPE_TO_OFFER_TYPE[application.drive.type] ?? 'FULL_TIME';
+    const existing = await db.offer.findUnique({ where: key, select: { id: true } });
     await db.offer.upsert({
       where: key,
-      create: {
-        studentId: application.studentId,
-        driveId: application.driveId,
-        ctc: application.drive.ctc ?? 0,
-      },
-      update: { ctc: application.drive.ctc ?? 0 },
+      create: { studentId: application.studentId, driveId: application.driveId, ctc, offerType },
+      // Keep an offerType the cell set by hand; only the CTC follows the drive.
+      update: { ctc },
     });
+    if (!existing) {
+      const who = application.student.user.name ?? 'A student';
+      await db.timelineEvent.create({
+        data: {
+          studentId: application.studentId,
+          driveId: application.driveId,
+          type: 'OFFER_RECORDED',
+          message: `${who} placed at ${application.drive.company.name}${ctc ? ` - ${lpa(ctc)}` : ''}`,
+          ctc,
+          offerType,
+        },
+      });
+    }
   } else {
     await db.offer.deleteMany({
       where: { studentId: application.studentId, driveId: application.driveId },
