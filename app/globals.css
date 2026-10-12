@@ -32,6 +32,12 @@
   --color-bad: var(--bad);
   --color-on-blue: var(--on-blue);
 
+  --color-o-full: var(--o-full);
+  --color-o-6m: var(--o-6m);
+  --color-o-2m: var(--o-2m);
+  --color-o-winter: var(--o-winter);
+  --color-o-ppo: var(--o-ppo);
+
   --font-display: var(--font-marcellus), Georgia, serif;
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-code), ui-monospace, monospace;
@@ -70,6 +76,12 @@
 
   /* Chart marks are stepped per mode and validated against that mode's surface,
      so they are not the same steps as the UI blue. */
+  --o-full: #059669;
+  --o-6m: #2563eb;
+  --o-2m: #7c3aed;
+  --o-winter: #d97706;
+  --o-ppo: #e11d48;
+
   --chart-1: #005f99;
   --chart-2: #de6c1a;
   --chart-grid: #e2ebf1;
@@ -111,6 +123,12 @@
   --warn: #f0a44a;
   --bad: #ff7a72;
   --on-blue: #04131e;
+
+  --o-full: #34d399;
+  --o-6m: #60a5fa;
+  --o-2m: #a78bfa;
+  --o-winter: #fbbf24;
+  --o-ppo: #fb7185;
 
   --chart-1: #2c96d6;
   --chart-2: #de6c1a;
@@ -335,6 +353,311 @@ body {
 .marquee:hover .marquee-track,
 .marquee:focus-within .marquee-track {
   animation-play-state: paused;
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes aurora {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -6%, 0) scale(1.12);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ping-soft {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--blue) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 12px transparent;
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.32s cubic-bezier(0.22, 0.75, 0.3, 1) both;
+}
+
+.fade-in {
+  animation: fade-in 0.25s ease both;
+}
+
+.pop {
+  animation: pop 0.22s cubic-bezier(0.22, 0.75, 0.3, 1) both;
+}
+
+.aurora-blob {
+  animation: aurora 14s ease-in-out infinite;
+  filter: blur(70px);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--line-soft) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 12px;
+}
+
+.grow-x {
+  transform-origin: left;
+  animation: grow-x 0.9s cubic-bezier(0.22, 0.75, 0.3, 1) both;
+}
+
+.ping-soft {
+  animation: ping-soft 2s ease-out infinite;
+}
+
+/* Cards that respond to the pointer: a small lift and a coloured rim. */
+.lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.lift:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--blue) 55%, var(--line));
+  box-shadow:
+    var(--shadow-lift),
+    0 0 0 1px color-mix(in oklab, var(--blue) 25%, transparent),
+    0 12px 32px -14px color-mix(in oklab, var(--blue) 45%, transparent);
+}
+
+/* Gradient rim for the cards that matter most. */
+.rim {
+  position: relative;
+}
+
+.rim::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--blue), transparent 40%, var(--arch));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--blue), var(--trace) 50%, var(--arch));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ------------------------------------------------------------ sunlight
+   A diagonal sweep of light across a card, a warm halo behind the key
+   numbers, and tinted tiles that take their colour from --tint. */
+
+@keyframes sun-sweep {
+  0% {
+    transform: translateX(-130%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+
+@keyframes halo {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+
+.shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.shine::after {
+  content: '';
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 38%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.2), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.shine:hover::after {
+  animation: sun-sweep 1.1s ease;
+}
+
+.shine-auto::after {
+  animation: sun-sweep 7s ease-in-out infinite;
+  animation-delay: var(--shine-delay, 0s);
+}
+
+.halo {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(46px);
+  pointer-events: none;
+  animation: halo 6s ease-in-out infinite;
+  z-index: -1;
+}
+
+.tint-tile {
+  background:
+    radial-gradient(120% 120% at 0% 0%, color-mix(in oklab, var(--tint) 10%, transparent), transparent 55%),
+    var(--surface);
+  border: 1px solid color-mix(in oklab, var(--tint) 18%, var(--line));
+  box-shadow: 0 6px 20px -14px color-mix(in oklab, var(--tint) 35%, transparent);
+}
+
+.tint-tile:hover {
+  box-shadow:
+    0 8px 24px -12px color-mix(in oklab, var(--tint) 45%, transparent),
+    0 0 0 1px color-mix(in oklab, var(--tint) 25%, transparent);
+}
+
+.sun-btn {
+  background: linear-gradient(135deg, var(--arch), color-mix(in oklab, var(--arch) 55%, #ffd36a));
+  color: #1d0f00;
+  box-shadow: 0 8px 26px -10px color-mix(in oklab, var(--arch) 80%, transparent);
+}
+
+/* -------------------------------------------------------- rotating border
+   A conic gradient that spins continuously behind the card, visible through
+   a 2px gap between the outer wrapper and the inner panel. */
+
+.glow-card {
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.5s ease;
+}
+
+.glow-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -30%;
+  width: 55%;
+  height: 70%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklab, var(--rb-c1, var(--blue)) 25%, transparent),
+    color-mix(in oklab, var(--rb-c2, var(--trace)) 12%, transparent) 50%,
+    transparent 80%
+  );
+  filter: blur(30px);
+  pointer-events: none;
+  opacity: 0.4;
+  transition: opacity 0.5s ease;
+}
+
+.glow-card:hover::before {
+  opacity: 0.65;
+}
+
+.glow-card:hover {
+  border-color: color-mix(in oklab, var(--rb-c1, var(--blue)) 50%, var(--line));
+}
+
+:root[data-theme='dark'] .glow-card {
+  background: var(--bg);
+}
+
+/* Colored accent on the top and right edges */
+.glow-card::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 60%;
+  height: 50%;
+  border-top: 2px solid color-mix(in oklab, var(--rb-c1, var(--blue)) 70%, transparent);
+  border-right: 2px solid color-mix(in oklab, var(--rb-c1, var(--blue)) 50%, transparent);
+  border-top-right-radius: 20px;
+  pointer-events: none;
+  mask-image: linear-gradient(135deg, transparent 10%, #000 40%, #000 60%, transparent 100%);
+  transition: opacity 0.5s ease;
+  opacity: 0.7;
+}
+
+.glow-card:hover::after {
+  opacity: 1;
+}
+
+/* macOS dock-style magnify: slow elastic scale on hover */
+.slow-grow {
+  will-change: transform;
+  transform: scale(1);
+  transition: transform 2.5s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.slow-grow:hover {
+  transform: scale(1.1) !important;
+}
+
+/* hero mesh – a subtle radial dot pattern behind the landing page */
+.hero-mesh {
+  background-image: radial-gradient(circle, var(--line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 72%);
 }
 
 @media (prefers-reduced-motion: reduce) {

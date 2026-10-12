@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { cn, initials } from '@/lib/utils';
+import { CompanyLogo } from './CompanyLogo';
 
 /* ------------------------------------------------------------------ button */
 
@@ -88,6 +89,36 @@ export function Badge({
 
 /* -------------------------------------------------------------- logo tile */
 
+function companyDomain(name: string): string | null {
+  const map: Record<string, string> = {
+    google: 'google.com', amazon: 'amazon.com', microsoft: 'microsoft.com',
+    meta: 'meta.com', apple: 'apple.com', netflix: 'netflix.com',
+    adobe: 'adobe.com', flipkart: 'flipkart.com', razorpay: 'razorpay.com',
+    zomato: 'zomato.com', paytm: 'paytm.com', infosys: 'infosys.com',
+    tcs: 'tcs.com', wipro: 'wipro.com', atlassian: 'atlassian.com',
+    uber: 'uber.com', swiggy: 'swiggy.com', phonepe: 'phonepe.com',
+    samsung: 'samsung.com', oracle: 'oracle.com', ibm: 'ibm.com',
+    deloitte: 'deloitte.com', accenture: 'accenture.com', cognizant: 'cognizant.com',
+    goldman: 'goldmansachs.com', 'goldman sachs': 'goldmansachs.com',
+    morgan: 'morganstanley.com', 'morgan stanley': 'morganstanley.com',
+    jpmorgan: 'jpmorgan.com', citi: 'citi.com', stripe: 'stripe.com',
+    slack: 'slack.com', spotify: 'spotify.com', salesforce: 'salesforce.com',
+    vmware: 'vmware.com', cisco: 'cisco.com', intel: 'intel.com',
+    nvidia: 'nvidia.com', qualcomm: 'qualcomm.com', paypal: 'paypal.com',
+    shopify: 'shopify.com', twitter: 'x.com', linkedin: 'linkedin.com',
+    meesho: 'meesho.io', cred: 'cred.club', groww: 'groww.in',
+    zerodha: 'zerodha.com', myntra: 'myntra.com', ola: 'olacabs.com',
+    dream11: 'dream11.com', juspay: 'juspay.in', postman: 'postman.com',
+    browserstack: 'browserstack.com', zoho: 'zoho.com',
+  };
+  const key = name.toLowerCase().trim();
+  if (map[key]) return map[key];
+  for (const [k, v] of Object.entries(map)) {
+    if (key.includes(k)) return v;
+  }
+  return null;
+}
+
 export function CompanyMark({
   name,
   size = 'md',
@@ -97,17 +128,25 @@ export function CompanyMark({
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
+  const px = { sm: 36, md: 48, lg: 64 }[size];
   const box = { sm: 'size-9 text-[11px]', md: 'size-12 text-sm', lg: 'size-16 text-lg' }[size];
+  const domain = companyDomain(name);
+  const logoUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=${px * 2}` : null;
+
   return (
     <span
       className={cn(
-        'niche grid shrink-0 place-items-center border border-line bg-surface-2 font-display tracking-wide text-blue',
+        'niche grid shrink-0 place-items-center overflow-hidden border border-line bg-white font-display tracking-wide text-blue',
         box,
         className,
       )}
       aria-hidden
     >
-      {initials(name)}
+      {logoUrl ? (
+        <CompanyLogo src={logoUrl} fallback={initials(name)} size={px} />
+      ) : (
+        initials(name)
+      )}
     </span>
   );
 }
@@ -166,7 +205,7 @@ export function StatTile({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border bg-surface p-5',
+        'shine lift relative overflow-hidden rounded-2xl border bg-surface p-5',
         tone === 'accent' ? 'border-arch/35' : 'border-line',
       )}
     >
