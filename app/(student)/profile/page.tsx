@@ -39,6 +39,8 @@ export default async function ProfilePage() {
           activeBacklogs: student.activeBacklogs,
           resumeUrl: student.resumeUrl,
           resumeLabel: student.resumeLabel,
+          skills: student.skills,
+          linkedinUrl: student.linkedinUrl,
           verified: student.verified,
         }}
       />

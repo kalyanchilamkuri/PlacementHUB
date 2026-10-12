@@ -18,6 +18,8 @@ type Student = {
   activeBacklogs: number;
   resumeUrl: string | null;
   resumeLabel: string | null;
+  skills: string | null;
+  linkedinUrl: string | null;
   verified: boolean;
 };
 
@@ -220,6 +222,30 @@ export function ProfileForm({
               defaultValue={student.resumeLabel ?? ''}
               className={FIELD}
               placeholder="SDE"
+            />
+          </Field>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-line bg-surface p-5 md:p-6">
+        <h2 className="font-display text-lg">Show yourself</h2>
+        <p className="mt-1 text-sm text-muted">Shown on your card when people look you up.</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Field label="Skills" hint="Separate with commas, for example React, Python, SQL.">
+            <input
+              name="skills"
+              defaultValue={student.skills ?? ''}
+              className={FIELD}
+              placeholder="React, Python, SQL"
+            />
+          </Field>
+          <Field label="LinkedIn">
+            <input
+              name="linkedinUrl"
+              type="url"
+              defaultValue={student.linkedinUrl ?? ''}
+              className={FIELD}
+              placeholder="https://linkedin.com/in/you"
             />
           </Field>
         </div>
