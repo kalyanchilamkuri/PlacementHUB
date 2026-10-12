@@ -8,49 +8,91 @@ import {
   Bell,
   Building2,
   CalendarDays,
+  FileText,
   LayoutDashboard,
   ListChecks,
   LogOut,
   Megaphone,
   Menu,
+  PenLine,
   Settings,
   Users,
   UserRound,
   Briefcase,
+  Award,
+  BarChart3,
+  GraduationCap,
+  Trophy,
   X,
   type LucideIcon,
 } from 'lucide-react';
 import { INSTITUTE } from '@/lib/site';
 import { cn, initials } from '@/lib/utils';
 import { ThemeToggle } from '@/components/site/ThemeToggle';
+import { ChatWidget } from '@/components/app/ChatWidget';
 
 type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  /** Prefix used to decide the active state, when it differs from href. */
   match?: string;
 };
 
-/** Defined here rather than passed in: a server component cannot send a
- *  component reference like an icon across the client boundary. */
-const NAV: Record<'student' | 'admin', NavItem[]> = {
-  student: [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/drives', label: 'Drives', icon: Briefcase },
-    { href: '/applications', label: 'Applications', icon: ListChecks },
-    { href: '/calendar', label: 'Calendar', icon: CalendarDays },
-    { href: '/notices', label: 'Notices', icon: Megaphone },
-    { href: '/profile', label: 'Profile', icon: UserRound },
-  ],
-  admin: [
-    { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-    { href: '/admin/companies', label: 'Companies', icon: Building2 },
-    { href: '/admin/drives', label: 'Drives', icon: Briefcase },
-    { href: '/admin/students', label: 'Students', icon: Users },
-    { href: '/admin/notices', label: 'Notices', icon: Megaphone },
-    { href: '/admin/settings', label: 'Settings', icon: Settings },
-  ],
+type NavSection = { heading?: string; items: NavItem[] };
+
+const STUDENT_NAV: NavSection[] = [
+  {
+    items: [
+      { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
+      { href: '/placements', label: 'Placements', icon: Trophy },
+      { href: '/drives', label: 'Open drives', icon: Briefcase },
+      { href: '/applications', label: 'My applications', icon: ListChecks },
+      { href: '/calendar', label: 'Calendar', icon: CalendarDays },
+      { href: '/notices', label: 'Notices', icon: Megaphone },
+      { href: '/profile', label: 'My profile', icon: UserRound },
+    ],
+  },
+];
+
+const ADMIN_NAV: NavSection[] = [
+  {
+    items: [
+      { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+      { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+    ],
+  },
+  {
+    heading: 'People & Placements',
+    items: [
+      { href: '/admin/students', label: 'Students', icon: Users },
+      { href: '/admin/placements', label: 'Placements', icon: GraduationCap },
+    ],
+  },
+  {
+    heading: 'Recruitment',
+    items: [
+      { href: '/admin/companies', label: 'Companies', icon: Building2 },
+      { href: '/admin/drives', label: 'Drives', icon: Briefcase, match: '/admin/drives' },
+    ],
+  },
+  {
+    heading: 'Actions',
+    items: [
+      { href: '/admin/offers', label: 'New offer', icon: Award },
+      { href: '/admin/drives/new', label: 'New drive', icon: Briefcase, match: '/admin/drives/new' },
+      { href: '/admin/notices', label: 'New notice', icon: PenLine },
+    ],
+  },
+  {
+    items: [
+      { href: '/admin/settings', label: 'Settings', icon: Settings },
+    ],
+  },
+];
+
+const SECTIONS: Record<'student' | 'admin', NavSection[]> = {
+  student: STUDENT_NAV,
+  admin: ADMIN_NAV,
 };
 
 export function Shell({
@@ -70,12 +112,17 @@ export function Shell({
   signOut: () => Promise<void>;
   children: React.ReactNode;
 }) {
-  const nav = NAV[variant];
+  const sections = SECTIONS[variant];
+  const allItems = sections.flatMap((s) => s.items);
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  // /admin is the overview, so it must not light up for every /admin/* child.
-  const isActive = (item: NavItem) =>
-    item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.match ?? item.href);
+  const isActive = (item: NavItem) => {
+    if (item.href === '/admin') return pathname === '/admin';
+    const match = item.match ?? item.href;
+    if (match === '/admin/drives/new') return pathname === '/admin/drives/new';
+    if (match === '/admin/drives') return pathname.startsWith('/admin/drives') && pathname !== '/admin/drives/new';
+    return pathname.startsWith(match);
+  };
 
   const avatar = (
     <span className="niche grid size-9 shrink-0 place-items-center overflow-hidden border border-line bg-blue-wash text-xs font-medium text-blue">
@@ -98,27 +145,47 @@ export function Shell({
           </span>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-2">
-          {nav.map((item) => {
-            const active = isActive(item);
+        <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-2">
+          {sections.map((section, si) => {
+            const hasActive = section.items.some(isActive);
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? 'page' : undefined}
+              <div
+                key={si}
                 className={cn(
-                  'relative flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm transition-colors',
-                  active
-                    ? 'bg-surface font-medium text-ink shadow-[var(--shadow-lift)]'
-                    : 'text-muted hover:bg-surface/60 hover:text-ink',
+                  'rounded-xl border p-1.5 transition-colors',
+                  hasActive
+                    ? 'border-blue/25 bg-blue-wash/40'
+                    : 'border-line/60 bg-surface-2/40',
                 )}
               >
-                {active && (
-                  <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-trace" aria-hidden />
+                {section.heading && (
+                  <p className="px-2.5 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-faint">
+                    {section.heading}
+                  </p>
                 )}
-                <item.icon size={18} className={active ? 'text-blue' : ''} />
-                {item.label}
-              </Link>
+                {section.items.map((item) => {
+                  const active = isActive(item);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      aria-current={active ? 'page' : undefined}
+                      className={cn(
+                        'relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors',
+                        active
+                          ? 'bg-surface font-medium text-ink shadow-[var(--shadow-lift)]'
+                          : 'text-muted hover:bg-surface/50 hover:text-ink',
+                      )}
+                    >
+                      {active && (
+                        <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r-full bg-trace" aria-hidden />
+                      )}
+                      <item.icon size={17} className={active ? 'text-blue' : ''} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>
@@ -187,7 +254,7 @@ export function Shell({
           {open && (
             <div className="border-t lg:hidden">
               <nav className="grid gap-1 px-4 py-3" onClick={() => setOpen(false)}>
-                {nav.map((item) => (
+                {allItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -214,6 +281,7 @@ export function Shell({
         <main id="main" className="min-w-0 flex-1 px-5 py-7 md:px-8">
           {children}
         </main>
+        <ChatWidget role={variant === 'admin' ? 'ADMIN' : 'STUDENT'} storageKey={user.email ?? 'anon'} />
       </div>
     </div>
   );
