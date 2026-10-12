@@ -70,37 +70,36 @@ export default async function AdminDrivesPage() {
             }
           />
         ) : (
-          <ul className="space-y-2">
-            {drives.map((d) => (
-              <li key={d.id}>
-                <Link
-                  href={`/admin/drives/${d.id}/applicants`}
-                  className="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-blue"
-                >
-                  <CompanyMark name={d.company.name} size="md" />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium">{d.company.name}</span>
-                      <Badge tone={STATUS_TONE[d.status] ?? 'neutral'}>
-                        {STATUS_LABEL[d.status] ?? d.status}
-                      </Badge>
-                    </span>
-                    <span className="mt-0.5 block text-sm text-muted">{d.role}</span>
+          <div className="overflow-hidden rounded-xl border border-line">
+            {drives.map((d, i) => (
+              <Link
+                key={d.id}
+                href={`/admin/drives/${d.id}/applicants`}
+                className={`flex flex-wrap items-center gap-4 border-b border-line/60 p-4 transition-colors last:border-0 hover:bg-blue-wash/30 ${i % 2 === 1 ? 'bg-surface-2/20' : 'bg-surface'}`}
+              >
+                <CompanyMark name={d.company.name} size="md" />
+                <span className="min-w-0 flex-1">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">{d.company.name}</span>
+                    <Badge tone={STATUS_TONE[d.status] ?? 'neutral'}>
+                      {STATUS_LABEL[d.status] ?? d.status}
+                    </Badge>
                   </span>
-                  <span className="text-sm text-muted">
-                    {d.ctc !== null && <span className="tnum mr-4">{lpa(d.ctc)}</span>}
-                    <span className="tnum">Closes {longDate(d.deadline.toISOString())}</span>
+                  <span className="mt-0.5 block text-sm text-muted">{d.role} · {d.type}</span>
+                </span>
+                <span className="text-sm text-muted">
+                  {d.ctc !== null && <span className="tnum mr-4">{lpa(d.ctc)}</span>}
+                  <span className="tnum">Closes {longDate(d.deadline.toISOString())}</span>
+                </span>
+                <span className="tnum w-24 text-right text-sm">
+                  <span className="font-medium text-ink">{d._count.applications}</span>{' '}
+                  <span className="text-muted">
+                    {d._count.applications === 1 ? 'applicant' : 'applicants'}
                   </span>
-                  <span className="tnum w-24 text-right text-sm">
-                    {d._count.applications}{' '}
-                    <span className="text-muted">
-                      {d._count.applications === 1 ? 'applicant' : 'applicants'}
-                    </span>
-                  </span>
-                </Link>
-              </li>
+                </span>
+              </Link>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>

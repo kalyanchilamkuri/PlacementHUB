@@ -274,8 +274,14 @@ export function DriveForm({ companies, branches }: { companies: Company[]; branc
           <Field label="Applications close" hint="Students cannot apply after this moment.">
             <input name="deadline" type="datetime-local" required className={FIELD} />
           </Field>
-          <Field label="Season" hint="Optional label, for example 2026-27.">
-            <input name="season" className={FIELD} placeholder="2026-27" />
+          <Field label="Academic year" hint="For example 2026-27.">
+            <input name="academicYear" className={FIELD} placeholder="2026-27" />
+          </Field>
+          <Field label="Which students" hint="3rd year hires interns; 4th year hires winter interns and full-timers.">
+            <select name="yearOfStudy" className={FIELD} defaultValue="4">
+              <option value="3">3rd year (internships)</option>
+              <option value="4">4th year (winter / full-time)</option>
+            </select>
           </Field>
         </div>
       </Fieldset>
