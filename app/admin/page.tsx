@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowRight, Building2, Check, GitBranch, Briefcase } from 'lucide-react';
+import { ArrowRight, Award, Building2, Check, GitBranch, Briefcase } from 'lucide-react';
 import { requireAdmin } from '@/lib/dal';
 import { db } from '@/lib/db';
 import { lpa } from '@/lib/utils';
@@ -18,7 +18,7 @@ export default async function AdminOverviewPage() {
       db.drive.count(),
       db.student.count(),
       db.application.count(),
-      db.offer.findMany({ select: { ctc: true } }),
+      db.offer.findMany({ select: { ctc: true, studentId: true, offerType: true } }),
       db.drive.findMany({
         where: { status: 'PUBLISHED' },
         include: { company: true, _count: { select: { applications: true } } },
@@ -55,9 +55,13 @@ export default async function AdminOverviewPage() {
   ];
 
   const remaining = setupSteps.filter((s) => !s.done);
+  const placedStudents = new Set(offers.map((o) => o.studentId)).size;
   const placed = offers.length;
-  const avg = placed ? Math.round(offers.reduce((a, o) => a + o.ctc, 0) / placed) : 0;
-  const highest = offers.reduce((a, o) => Math.max(a, o.ctc), 0);
+  const packaged = offers.filter((o) => o.ctc > 0 && ['FULL_TIME', 'PPO'].includes(o.offerType));
+  const avg = packaged.length
+    ? Math.round(packaged.reduce((a, o) => a + o.ctc, 0) / packaged.length)
+    : 0;
+  const highest = packaged.reduce((a, o) => Math.max(a, o.ctc), 0);
 
   return (
     <div className="mx-auto w-full max-w-[1100px] space-y-9">
@@ -105,6 +109,28 @@ export default async function AdminOverviewPage() {
         </section>
       )}
 
+      <section className="arrive rim relative overflow-hidden rounded-3xl bg-surface p-6 md:p-7">
+        <div className="aurora-blob pointer-events-none absolute -right-10 -top-16 size-60 rounded-full bg-trace/20" aria-hidden />
+        <div className="relative flex flex-wrap items-center justify-between gap-5">
+          <div>
+            <p className="tnum display text-[clamp(2rem,5vw,3rem)]">
+              {placedStudents}
+              <span className="text-muted"> of {students} placed</span>
+              <span className="text-gradient ml-3">
+                {students ? Math.round((placedStudents / students) * 100) : 0}%
+              </span>
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              {placed} offer{placed === 1 ? '' : 's'} recorded across {companies} compan
+              {companies === 1 ? 'y' : 'ies'}.
+            </p>
+          </div>
+          <Button href="/admin/offers" size="lg" className="sun-btn hover:brightness-110">
+            <Award size={18} /> Record an offer
+          </Button>
+        </div>
+      </section>
+
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile value={students} label="Students registered" note="Created on first sign-in" />
         <StatTile value={applications} label="Applications" />
@@ -114,7 +140,7 @@ export default async function AdminOverviewPage() {
           label="Highest package"
           note={placed ? `${placed} offer${placed === 1 ? '' : 's'} recorded` : 'No offers yet'}
         />
-        <StatTile value={avg ? lpa(avg) : '—'} label="Average package" />
+        <StatTile value={avg ? lpa(avg) : '—'} label="Average package" note="Full-time and PPO offers" />
       </section>
 
       <section>
