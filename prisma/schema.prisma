@@ -44,6 +44,9 @@ model Student {
   activeBacklogs Int     @default(0)
   resumeUrl      String?
   resumeLabel    String?
+  /// Comma separated skills, shown on the profile card.
+  skills         String?
+  linkedinUrl    String?
   /// Set by the cell once academics are checked against the registry.
   verified       Boolean @default(false)
 
@@ -52,6 +55,7 @@ model Student {
 
   applications Application[]
   offers       Offer[]
+  timeline     TimelineEvent[]
 }
 
 model Branch {
@@ -125,6 +129,10 @@ model Drive {
   deadline  DateTime
   status    String   @default("DRAFT") // DRAFT | PUBLISHED | CLOSED | COMPLETED
   season    String?
+  /// e.g. "2025-26"
+  academicYear String?
+  /// 3 = internship season, 4 = winter / full-time season
+  yearOfStudy  Int?
 
   minCgpa     Float  @default(0)
   maxBacklogs Int    @default(0)
@@ -140,6 +148,7 @@ model Drive {
   rounds       Round[]
   applications Application[]
   offers       Offer[]
+  timeline     TimelineEvent[]
 }
 
 model Round {
@@ -193,10 +202,34 @@ model Offer {
   studentId String
   driveId   String
   ctc       Int
+  /// 2_MONTH_INTERN | 6_MONTH_INTERN | WINTER_INTERN | FULL_TIME | PPO
+  offerType  String  @default("FULL_TIME")
+  isOnCampus Boolean @default(true)
+  /// Set when an internship was converted: the offerType it started as.
+  convertedFrom String?
+  /// Rupees per month, for internships.
+  stipend    Int?
   offeredOn DateTime @default(now())
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   drive   Drive   @relation(fields: [driveId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, driveId])
+}
+
+/// The live placement feed. Written by the single offer-entry action.
+model TimelineEvent {
+  id        String   @id @default(cuid())
+  studentId String?
+  driveId   String?
+  type      String // OFFER_RECORDED | OFFER_OFFCAMPUS | PPO_CONVERTED
+  message   String
+  ctc       Int?
+  offerType String?
+  createdAt DateTime @default(now())
+
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  drive   Drive?   @relation(fields: [driveId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }
